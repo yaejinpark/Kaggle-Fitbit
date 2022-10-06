@@ -26,7 +26,7 @@ ggplot(weightdiff_predicted_actual, aes(x=Id)) +
   scale_color_manual(values=data_colors)
 
 # Save the scatter plot
-ggsave("Users' Predicted vs Actual Weight Change.jpg")
+ggsave("img/Users' Predicted vs Actual Weight Change.jpg")
 
 # Show how much healthy hours of sleep users are getting
 sleep <- read.csv("data/created/users_sleep_healthy.csv")
@@ -53,4 +53,4 @@ cleaned_sleep %>%
     labs(x="User Id", y="% Healthy Sleep",fill='Healthy Sleep >= 75%')
 
 # Save the bar plot
-ggsave("Healthy Sleep Percentage for Each User.jpg")
+ggsave("img/Healthy Sleep Percentage for Each User.jpg")
