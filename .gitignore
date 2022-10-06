@@ -2,6 +2,9 @@
 data/cleaned
 data/original
 
+# .Rhistory
+.Rhistory
+
 # .DS_Store
 .DS_Store
 

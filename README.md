@@ -38,3 +38,6 @@
 * Find if user is in calories deficit, merging with dailyCalories table and calculating the calorie deficit.
 * Find users in calories deficit but did not lose weight or gained weight
 * Set a range of percentage where the user (during the observed time period) falls for healthy sleep in all sleep records. If healthy sleep is over 75% (some arbitrary assumption), have company recommend user to decrease screen time in the evening, workout more, etc.
+
+
+Get minutesleep data and get the average value of sleep quality for each user. Maybe I can merge them with the sleepDay data?
