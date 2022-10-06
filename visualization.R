@@ -54,3 +54,16 @@ cleaned_sleep %>%
 
 # Save the bar plot
 ggsave("img/Healthy Sleep Percentage for Each User.jpg")
+
+# TODO: Save two scatter plots below as pre-cleaning
+# Average time in bed awake vs percent healthy sleep?
+ggplot(data=sleep,aes(x=percent_healthy_sleep,y=avg_time_in_bed_awake)) + 
+  geom_point() +
+  scale_y_continuous(expand=c(0,0), limits=c(0,330))
+
+# Average time asleep vs percent healthy sleep?
+ggplot(data=sleep,aes(x=avg_asleep_minutes,y=percent_healthy_sleep)) + 
+  geom_point() +
+  scale_y_continuous(expand=c(0,0), limits=c(0,100))
+
+# TODO: Create two scatter plots from above without outliers

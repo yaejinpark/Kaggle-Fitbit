@@ -40,4 +40,6 @@
 * Set a range of percentage where the user (during the observed time period) falls for healthy sleep in all sleep records. If healthy sleep is over 75% (some arbitrary assumption), have company recommend user to decrease screen time in the evening, workout more, etc.
 
 
+For users_sleep_healthy, find the relationship between avg_time_in_bed_awake and percent_healthy_sleep (bigquery? Tableau?)
+
 Get minutesleep data and get the average value of sleep quality for each user. Maybe I can merge them with the sleepDay data?
