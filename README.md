@@ -27,6 +27,8 @@
 
 ### minuteSleep_merged
 * Added a column for sleep state translated from values (1 = Asleep, 2 = Restless, 3 = Awake)
+* Deleted logId column
+* Changed the date column so that time is shown in 24 hr format (for importing to BigQuery)
 * Fitbit blog has an article about restless sleep. Maybe recommend to customers to better their sleep quality by changing what makes them uncomfortable during their sleep, which is one of the causes of restless sleep.
 * If any sleep deprivation happens more frequently on Mondays, recommend more workout (need more analysis on workout vs sleep quality)/sleep preparation for users
 
@@ -39,7 +41,5 @@
 * Find users in calories deficit but did not lose weight or gained weight
 * Set a range of percentage where the user (during the observed time period) falls for healthy sleep in all sleep records. If healthy sleep is over 75% (some arbitrary assumption), have company recommend user to decrease screen time in the evening, workout more, etc.
 
-
-For users_sleep_healthy, find the relationship between avg_time_in_bed_awake and percent_healthy_sleep (bigquery? Tableau?)
-
-Get minutesleep data and get the average value of sleep quality for each user. Maybe I can merge them with the sleepDay data?
+sedentary minutes vs asleep minutes (Physically Idle Minutes vs Asleep Minutes)
+go deeper in analysis with above to divide sleep category (restless and fully asleep) for sleep help product recommendation with Tableau
