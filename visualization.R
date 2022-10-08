@@ -170,4 +170,16 @@ sleep_p4 <- ggplot(data=awake_phs_clean,aes(x=avg_asleep_minutes,y=percent_healt
             label=lm_eqn(awake_phs_clean$avg_asleep_minutes,
                          awake_phs_clean$percent_healthy_sleep), parse=TRUE)
 
+sleep_p5 <- ggplot(data=sedentary_asleep,aes(x=asleep_minutes,y=sedentary_minutes)) +
+  geom_point(size=3) + 
+  scale_y_continuous(expand=c(0,0),limit=c(500,1400)) +
+  ggtitle("Avg. Asleep Minutes vs. Avg. Sedentary Minutes (Per User)") +
+  labs(x="Minutes (Asleep)",y="Minutes (Sedentary)") +
+  geom_smooth(method=lm, formula=y~x) + 
+  geom_text(x=150,
+            y=625,
+            label=lm_eqn(sedentary_asleep$asleep_minutes,
+                         sedentary_asleep$sedentary_minutes), parse=TRUE)
+
 grid.arrange(sleep_p1,sleep_p2,sleep_p3,sleep_p4,nrow=2)
+grid.arrange(sleep_p2,sleep_p4,sleep_p5,nrow=3)
