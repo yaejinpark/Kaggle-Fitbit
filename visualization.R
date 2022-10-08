@@ -121,7 +121,7 @@ sedentary_asleep <- read.csv("data/created/sedentary_vs_asleep.csv")
 ggplot(data=sedentary_asleep,aes(x=asleep_minutes,y=sedentary_minutes)) +
   geom_point(size=3) + 
   scale_y_continuous(expand=c(0,0),limit=c(500,1400)) +
-  ggtitle("Avg. Asleep Minutes vs. Avg. Sedentary Minutes") +
+  ggtitle("Avg. Asleep Minutes vs. Avg. Sedentary Minutes (Per User)") +
   theme(plot.title = element_text(hjust=0.5)) +
   labs(x="Minutes (Asleep)",y="Minutes (Sedentary)") +
   geom_smooth(method=lm, formula=y~x) + 
