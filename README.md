@@ -65,7 +65,7 @@ Technologies utilized for data cleaning and analysis:
 * Added Total Distance calculation and Total Distance (miles) conversion
 
 ### Cleaning - Big Query
-*Please note that if you are to attempt in recreating my work, my queries' syntax may not work 100% for other DBMS. The queries are strictly for BigQuery.*
+*Please note that if you are to attempt in recreating my work, my queries' syntax may not work 100% for DBMS and may require minor adjustments. The queries are strictly for the BigQuery setup I have.*
 
 #### calorieIntake_activeLevel
 Manually created table for matching users' calorie requirement based on their activity levels
