@@ -44,7 +44,7 @@ Technologies utilized for data cleaning and analysis:
 * BigQuery
 * R (RStudio for IDE)
 
-### Google Sheets
+### Cleaning - Google Sheets
 #### weightLogInfo_merged
 * Added a column of calculated users' heights in meters based on their weights (kg) and BMI
 * Added a column of users' height in inches, converted from users' height in meters
@@ -64,7 +64,13 @@ Technologies utilized for data cleaning and analysis:
 #### dailyIntensities_merged
 * Added Total Distance calculation and Total Distance (miles) conversion
 
-## Cleaning Process and Adding Calculations - Big Query
+### Cleaning - Big Query
+*Please note that if you are to attempt in recreating my work, my queries' syntax may not work 100% for other DBMS. The queries are strictly for BigQuery.*
+
+#### calorieIntake_activeLevel
+Manually created table for matching users' calorie requirement based on their activity levels
+(Include Table Markdown here)
+
 * Find the user's active status by finding the average of distance they travelled and create a new table out of it grouped by userID
 * Find if user is in calories deficit, merging with dailyCalories table and calculating the calorie deficit.
 * Find users in calories deficit but did not lose weight or gained weight
