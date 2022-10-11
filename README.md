@@ -51,7 +51,7 @@ Technologies utilized for data cleaning and analysis:
 * Changed Date column from AM/PM format to 24 hour format for the time portion
 
 #### sleepDay_merged
-* Changed the SleepDay column to get rid of HH:MM:SS AM due to problem in importing to BigQuery
+* Changed the SleepDay column to show time in a 24 hour format since AM and PM for time notation causes isues when importing to BigQuery
 * Added a column for time (minutes) users were awake in bed
 * Added a column for time asleep conversion from minutes to hours
 * Added a boolean column for healthy sleep for each row (7 to 9 hours) based on time asleep in hours
