@@ -11,7 +11,7 @@ This dataset can also provide an opportunity for health-related startups to expl
 
 (Add Table of Contents here)
 
-## Questions, Hypotheses and Assumptions
+## Questions and Assumptions
 This case study is broadly divided into two parts: Users' calories/weight change and users' sleep quality. 
 
 ### Questions Aimed to be Answered
@@ -31,39 +31,35 @@ This case study is broadly divided into two parts: Users' calories/weight change
 ## Overview of Original Data Cleaned and Analyzed
 There is an abundance of health data from the users uploaded in Kaggle, but there were several datasets that can be focused on and can play a key role in creating more datasets for further analysis. Here is the list of files used for this case study and their brief description:
 
-* dailyActivity_merged: Actiity intensity information (sedentary, lightly active, fairly active, very active) and number of steps along with distance traveled by user on foot for each day
-* dailyCalories_merged: Subset of dailyActivity_merged. Calculation of calories burnt by users on each day the users were wearing their Fitbit devices
-* dailyIntensities_merged: Subset of dailyActivity_merged. Number of minutes for activity intensities and distance traveled for the same intensities for each users on each day
-* minuteSleep_merged: Long table of data for users' sleep status every minute on each day
-* sleepDay_merged: Number of sleep sessions each user had each day with total time users were in bed (not necessarily asleep) and their total time asleep
-* weightLogInfo_merged: Weight information of users - either logged manually or automatically with smart scales
+* *dailyActivity_merged*: Actiity intensity information (sedentary, lightly active, fairly active, very active) and number of steps along with distance traveled by user on foot for each day
+* *dailyCalories_merged*: Subset of *dailyActivity_merged*. Calculation of calories burnt by users on each day the users were wearing their Fitbit devices
+* *dailyIntensities_merged*: Subset of *dailyActivity_merged*. Number of minutes for activity intensities and distance traveled for the same intensities for each users on each day
+* *minuteSleep_merged*: Long table of data for users' sleep status every minute on each day
+* *sleepDay_merged*: Number of sleep sessions each user had each day with total time users were in bed (not necessarily asleep) and their total time asleep
+* *weightLogInfo_merged*: Weight information of users - either logged manually or automatically with smart scales
 
 ## Data Cleaning
 Technologies utilized for data cleaning and analysis:
 * Google Sheets
 * BigQuery
 * R (RStudio for IDE)
+
 ### Google Sheets
 #### weightLogInfo_merged
 * Added a column of calculated users' heights in meters based on their weights (kg) and BMI
 * Added a column of users' height in inches, converted from users' height in meters
 * Changed Date column from AM/PM format to 24 hour format for the time portion
-* Assuming that data was collected from American women, the women are either really short or really tall compared to the average (5'4)
 
 #### sleepDay_merged
 * Changed the SleepDay column to get rid of HH:MM:SS AM due to problem in importing to BigQuery
 * Added a column for time (minutes) users were awake in bed
 * Added a column for time asleep conversion from minutes to hours
 * Added a boolean column for healthy sleep for each row (7 to 9 hours) based on time asleep in hours
-* Add a pie graph of resulting boolean for healthy sleep if needed
-* Suggestion for company: add a qualitative survey on "How was your sleep quality based on a scale of 5?"
 
 #### minuteSleep_merged
 * Added a column for sleep state translated from values (1 = Asleep, 2 = Restless, 3 = Awake)
-* Deleted logId column
+* Deleted logId column as it is not being used in this analysis
 * Changed the date column so that time is shown in 24 hr format (for importing to BigQuery)
-* Fitbit blog has an article about restless sleep. Maybe recommend to customers to better their sleep quality by changing what makes them uncomfortable during their sleep, which is one of the causes of restless sleep.
-* If any sleep deprivation happens more frequently on Mondays, recommend more workout (need more analysis on workout vs sleep quality)/sleep preparation for users
 
 #### dailyIntensities_merged
 * Added Total Distance calculation and Total Distance (miles) conversion
@@ -74,5 +70,9 @@ Technologies utilized for data cleaning and analysis:
 * Find users in calories deficit but did not lose weight or gained weight
 * Set a range of percentage where the user (during the observed time period) falls for healthy sleep in all sleep records. If healthy sleep is over 75% (some arbitrary assumption), have company recommend user to decrease screen time in the evening, workout more, etc.
 
-sedentary minutes vs asleep minutes (Physically Idle Minutes vs Asleep Minutes)
-go deeper in analysis with above to divide sleep category (restless and fully asleep) for sleep help product recommendation with Tableau
+Remaining TODO
+* go deeper in analysis with above to divide sleep category (restless and fully asleep) for sleep help product recommendation with Tableau
+* Fitbit blog has an article about restless sleep. Maybe recommend to customers to better their sleep quality by changing what makes them uncomfortable during their sleep, which is one of the causes of restless sleep.
+* If any sleep deprivation happens more frequently on Mondays, recommend more workout (need more analysis on workout vs sleep quality)/sleep preparation for users
+* Add a pie graph of resulting boolean for healthy sleep if needed
+* Suggestion for company: add a qualitative survey on "How was your sleep quality based on a scale of 5?"
