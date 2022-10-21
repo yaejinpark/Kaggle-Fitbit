@@ -45,33 +45,65 @@ Technologies utilized for data cleaning and analysis:
 * R (RStudio for IDE)
 
 ### Cleaning - Google Sheets
-#### weightLogInfo_merged
+**weightLogInfo_merged**
 * Added a column of calculated users' heights in meters based on their weights (kg) and BMI
 * Added a column of users' height in inches, converted from users' height in meters
 * Changed Date column from AM/PM format to 24 hour format for the time portion
 
-#### sleepDay_merged
+**sleepDay_merged**
 * Changed the SleepDay column to show time in a 24 hour format since AM and PM for time notation causes isues when importing to BigQuery
 * Added a column for time (minutes) users were awake in bed
 * Added a column for time asleep conversion from minutes to hours
 * Added a boolean column for healthy sleep for each row (7 to 9 hours) based on time asleep in hours
 
-#### minuteSleep_merged
+**minuteSleep_merged**
 * Added a column for sleep state translated from values (1 = Asleep, 2 = Restless, 3 = Awake)
 * Deleted logId column as it is not being used in this analysis
 * Changed the date column so that time is shown in 24 hr format (for importing to BigQuery)
 
-#### dailyIntensities_merged
+**dailyIntensities_merged**
 * Added Total Distance calculation and Total Distance (miles) conversion
 
+**calorieIntake_activeLevel (Manually Created)**
+*I only realized that I spelled sedentary incorrectly after I was done with the visualizing process of this case study. Apologies.*
+
+| ActiveLevel      | Calorie Intake |
+| ----------- | ----------- |
+| Sedantary      | 1800       |
+| Moderate   | 2000        |
+| Active      | 2200       |
+Calorie intake assumptions were made based on [Estimated Calorie Requirements](https://www.webmd.com/diet/features/estimated-calorie-requirement)
+
+
 ### Cleaning - Big Query
-*Please note that if you are to attempt in recreating my work, my queries' syntax may not work 100% for DBMS and may require minor adjustments. The queries are strictly for the BigQuery setup I have.*
+*Please note that if you are to attempt in recreating my work, my queries' syntax may not work 100% for DBMS and may require minor adjustments. The queries are strictly for the BigQuery setup I have, as shown in the user_activities table in the image below.*
 
-#### calorieIntake_activeLevel
-Manually created table for matching users' calorie requirement based on their activity levels
-(Include Table Markdown here)
+![BigQuery Settings](/img/bigquery-setup.png)
 
-* Find the user's active status by finding the average of distance they travelled and create a new table out of it grouped by userID
+**active_levels**
+Found the user's active status by finding the average of distance they travelled and grouped by userID
+
+```SQL
+SELECT Id,
+  AVG(TotalDistanceMiles) as avg_distance,
+  CASE 
+    WHEN AVG(TotalDistanceMiles) < 1.5 THEN 'Sedantary'
+    WHEN AVG(TotalDistanceMiles) >= 1.5 AND AVG(TotalDistanceMiles) < 3 THEN 'Moderate'
+    ELSE 'Active'
+  END AS ActiveLevel
+FROM user_activities.daily_intensities
+GROUP BY Id;
+```
+
+
+
+```SQL
+SELECT al.*, ci.CalorieIntake
+FROM user_activities.active_levels as al
+JOIN user_activities.calorie_intake as ci on al.ActiveLevel = ci.ActiveLevel
+ORDER BY al.Id;
+```
+ 
 * Find if user is in calories deficit, merging with dailyCalories table and calculating the calorie deficit.
 * Find users in calories deficit but did not lose weight or gained weight
 * Set a range of percentage where the user (during the observed time period) falls for healthy sleep in all sleep records. If healthy sleep is over 75% (some arbitrary assumption), have company recommend user to decrease screen time in the evening, workout more, etc.
