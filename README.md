@@ -1,5 +1,5 @@
 # Kaggle Fitbit Data - Calories and Sleep Analysis for Bellabeat
-Author: Jin Park
+Author: Jin Park\
 Last Revised: November 14th, 2022
 
 ## Introduction
@@ -40,7 +40,6 @@ There is an abundance of health data from the users uploaded in Kaggle, but ther
 Technologies utilized for data cleaning and analysis:
 * Google Sheets
 * BigQuery
-* R (RStudio for IDE)
 
 ### Cleaning - Google Sheets
 **weightLogInfo_merged**
@@ -190,11 +189,125 @@ GROUP BY Id
 
 Now that all of the data I require are cleaned and prepared, it's time to visualize them and look for any trends among them.
 
-## Visualization
+## Visualization, Analysis, and More Cleaning
 
-Remaining TODO
-* go deeper in analysis with above to divide sleep category (restless and fully asleep) for sleep help product recommendation with Tableau
-* Fitbit blog has an article about restless sleep. Maybe recommend to customers to better their sleep quality by changing what makes them uncomfortable during their sleep, which is one of the causes of restless sleep.
-* If any sleep deprivation happens more frequently on Mondays, recommend more workout (need more analysis on workout vs sleep quality)/sleep preparation for users
-* Add a pie graph of resulting boolean for healthy sleep if needed
-* Suggestion for company: add a qualitative survey on "How was your sleep quality based on a scale of 5?"
+R (RStudio for IDE) was utilized for visualizing the data I cleaned. Before I present the visualization, let's look back to the questions I'm aiming to answer. 
+
+1. Is there a trend between users' weight and the calories they are burning each day?
+2. What is the relationship between users' time in bed and their sleep qualities?
+
+### Weight vs. Calories Burnt
+
+*Note: Negative weight change indicates weight gain, whether it is predicted or actual.*
+
+![Weight Change](img/Users'%20Predicted%20vs%20Actual%20Weight%20Change.jpg)
+
+```R
+# Read the CSV created from BigQuery
+weightdiff_predicted_actual <- read.csv("data/created/weightdiff_pred_actual_merged.csv")
+
+# Change the Id column to string so that it's not shown in scientific notation
+weightdiff_predicted_actual$Id <- as.character(weightdiff_predicted_actual$Id)
+
+# Creating a list to add manual legend
+data_colors <- c('Predicted'='#ff05dd', 'Actual'='#34aaff')
+
+# Create a scatter plot with users' predicted and actual weight differences
+ggplot(weightdiff_predicted_actual, aes(x=Id)) +
+  geom_segment(aes(x=Id, xend=Id, y=weightloss_pred_lb, yend=weight_diff_lb)) +
+  geom_point(aes(y=weightloss_pred_lb, color='Predicted'),size=5) + 
+  geom_point(aes(y=weight_diff_lb, color = 'Actual'),size=5) +
+  geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  ggtitle("Predicted Weight Change and Actual Weight Change of Users") + 
+  theme(plot.title=element_text(hjust=0.5)) +
+  labs(x="User Id", y="Weight (lb)", color="Data Type") + 
+  scale_color_manual(values=data_colors)
+
+# Save the scatter plot
+ggsave("img/Users' Predicted vs Actual Weight Change.jpg")
+```
+
+As you can see from the plot, there is no visual relationship between predicted weight change and actual weight change. Since predicted weight change was calculated based on an assumed calorific intake and constant calorie burn, maybe this lack of trend is obvious. 
+
+One more observation to note is that not all users were consistent with their weight logging. Most users recorded their weight for the first few days and didn't, and the fact that there were only eight users that recorded their weight data makes the hypothesis even more inconclusive. There's also a room for human error since more than half of the weight data are recorded manually, which is prone to typos and dishonest data. 
+
+#### Recommendations to Improve Weights Data Analysis
+**Encourage users to weigh in at a constant rate.**
+Since the biggest inconsistency was shown in the frequency of the users weighing in, for some data, I had to record the very first weigh-in and the last as the same (some users only weighed in once). This would not be accurate data compared to those of the users that did weigh in several more times.
+
+**Get Data on Calorie and Nutritions Intake**
+This analysis was done purely on the assumption that more calories burnt than calories consumed will lead to a weight change, which is not entirely true. More data on what kind of food the users were consuming would greatly help with accuracy. There are many applications that track calories based on a specific dish or even individual ingredients, and Bellabeats can benefit by collaborating with them if they don't have an internal food tracker available.
+
+**Users' Age and Health Data**
+Another factor that can affect weight change is the users' age and their medical conditions, if any. Certain age groups burn less calories than others, and certain medical conditions can also amplify or reduce this effect. One well-known example is [Polycystic Ovary Syndrome (PCOS)](https://www.webmd.com/women/polycystic-ovary-syndrome-pcos-and-weight-gain). Knowing that users have a certain condition may help adjust their weight change goals more accurately.
+
+### Idle Time (But Awake) vs. Sleep Quality
+I wanted to know how many users were getting quality sleep. The standard of quality sleep in this context means that for 75% users' time in bed, the user was asleep. This is the visualization process for the *users_sleep_healthy* dataset. The result is as following:
+
+![Healthy Sleep](img/Healthy%20Sleep%20Percentage%20for%20Each%20User.jpg)
+
+```R
+cleaned_sleep %>%
+  ggplot2::ggplot(aes(x=Id,y=percent_healthy_sleep,fill=percent_healthy_sleep >= 75)) + 
+    geom_bar(stat='identity') +
+    geom_hline(yintercept=75, linetype="dashed", color = "red") +
+    theme(axis.text.x=element_text(angle=60,vjust=0.5)) +
+    scale_fill_manual(values = c('#34aaff','#ff05dd'), labels=c('T'='>=75','F'='<75')) + 
+    scale_y_continuous(expand=c(0,0), limits=c(0,90)) +
+    ggtitle("% Healthy Sleep of All Sleep Records for Each User") +
+    theme(plot.title = element_text(hjust=0.5)) + 
+    labs(x="User Id", y="% Healthy Sleep",fill='Healthy Sleep >= 75%')
+```
+
+It is observed that most users sleep quality weren't that great, with some of them even recording 0 minutes of sleep throughout several days or weeks, which is not possible unless said users have illnesses that cause severe insomnia as a symptom. Due to the extremely low but possible case as such, I left the data with 0 minutes of sleep recorded.
+
+What can possibly be disrupting the users from getting the much needed rest? I decided to investigate further by dividing the original question "What is the relationship between users' time in bed and their sleep qualities?" into two sub questions:
+1. Is there a relationship between time spent in bed awake and % healthy sleep?
+2. Is there a relationship between average time asleep vs. % healthy sleep?
+
+Let's take a look at the scatter plot that shows the relationship between time spent in bed awake and % healthy sleep first.
+
+![Time Awake Healthy Sleep Pre-Cleaning](img/Avg%20Time%20Awake%20in%20Bed%20and%20Healthy%20Sleep%20Percentage%20(Pre-Cleaning).jpg)
+```R
+ggplot(data=sleep,aes(x=percent_healthy_sleep,y=avg_time_in_bed_awake)) + 
+  geom_point(size=3) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,330)) +
+  ggtitle("Average Time in Bed Awake vs. % Healthy Sleep (Pre-Cleaning)") +
+  theme(plot.title = element_text(hjust=0.5)) + 
+  labs(x="% Healthy Sleep",y="Minutes")
+```
+
+It seems that there might possibly be a trend between time spent awake in bed and % healthy sleep. I removed the outliers and created a trendline for this dataset to see if there is indeed a trend or a relationship.
+
+![Time Awake Healthy Sleep](img/Avg%20Time%20Awake%20in%20Bed%20and%20Healthy%20Sleep%20Percentage.jpg)
+
+```R
+# Remove the outliers seen in the plot
+awake_phs_clean <- sleep[sleep$avg_time_in_bed_awake < 100,]
+
+# Function for getting a trendline's equation
+lm_eqn <- function(x,y){
+  m <- lm(y ~ x);
+  eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+                   list(a = format(unname(coef(m)[1]), digits = 2),
+                        b = format(unname(coef(m)[2]), digits = 2),
+                        r2 = format(summary(m)$r.squared, digits = 3)))
+  as.character(as.expression(eq));
+}
+
+# % healthy sleep vs Average time in bed awake after cleaning
+ggplot(data=awake_phs_clean,aes(x=percent_healthy_sleep,y=avg_time_in_bed_awake)) + 
+  geom_point(size=3) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,60)) +
+  ggtitle("Average Time in Bed Awake vs. % Healthy Sleep") +
+  theme(plot.title = element_text(hjust=0.5)) + 
+  labs(x="% Healthy Sleep",y="Minutes") +
+  geom_smooth(method=lm, formula=y~x) + 
+  geom_text(x=40, 
+            y=55, 
+            label=lm_eqn(awake_phs_clean$percent_healthy_sleep,
+                         awake_phs_clean$avg_time_in_bed_awake), parse=TRUE)
+
+# Save the scatter plot
+ggsave("img/Avg Time Awake in Bed and Healthy Sleep Percentage.jpg")
+```
