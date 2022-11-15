@@ -155,7 +155,7 @@ JOIN user_activities.weightloss_prediction as wp on aw.Id = wp.Id;
 The resulting table had the following schema and resembled given sample data:
 
 | Id | first_weigh_in |last_weigh_in|weightloss_pred_lb|weight_diff_lb|
-| ----------- | ----------- | ----------- | ---------- | ----------- | ---------- |
+| ----------- | ----------- | ----------- | ---------- | ----------- |
 | INTEGER | TIMESTAMP | TIMESETAMP | FLOAT|FLOAT|
 | 8877689391|2016-04-12 06:47:11 UTC|2016-05-12 06:42:53 UTC | 10.808|3.9683275000000151|
 | ... | ... | ... | ... |...|
