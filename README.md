@@ -7,8 +7,6 @@ Health has been and still is one of civilization's biggest interest and concern 
 
 This dataset can also provide an opportunity for health-related startups to explore potential opportunities that will allow them to create and design a product for their customers. In this case, a high-tech health startup focused on women's health known as [Bellabeat](https://bellabeat.com/) would like to know how it can help its customers by analyzing this data.
 
-(Add Table of Contents here)
-
 ## Questions and Assumptions
 This case study is broadly divided into two parts: Users' calories/weight change and users' sleep quality. 
 
