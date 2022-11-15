@@ -369,3 +369,6 @@ ggplot(data=sedentary_asleep,aes(x=asleep_minutes,y=sedentary_minutes)) +
 
 ```
 The trendline has a negative slope which suggests that the less time the users spend sedentary, the more quality sleep they will get. However, the r-squared value is very low and the relationship is somewhat debateable. Taking a glance at the overall scatter plot without the trendline also shows that there is little to no correlation between the two variables.
+
+## Conclusion
+Overall, I was not able to draw a confident conclusion on neither weight vs. calories and finding the factors that affect the users' sleep quality. Although health data is sensitive and might not be the easiest collect, the analysis I've done (and the analyses done by other people on this same dataset) can greatly improve if the data was more abundant and consistent. In the near future, I plan on exploring the cleaned dataset further with more powerful visualization tools such as Tableau to see if I can find more correlations among the given dataset that I was not able to spot with BigQuery and R. When I do, I would have a more satisfactory conclusion to tell other than "I need more data." 
