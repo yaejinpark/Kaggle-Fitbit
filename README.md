@@ -262,10 +262,12 @@ cleaned_sleep %>%
 It is observed that most users sleep quality weren't that great, with some of them even recording 0 minutes of sleep throughout several days or weeks, which is not possible unless said users have illnesses that cause severe insomnia as a symptom. Due to the extremely low but possible case as such, I left the data with 0 minutes of sleep recorded.
 
 What can possibly be disrupting the users from getting the much needed rest? I decided to investigate further by dividing the original question "What is the relationship between users' time in bed and their sleep qualities?" into two sub questions:
+
 1. Is there a relationship between time spent in bed awake and % healthy sleep?
 2. Is there a relationship between average time asleep vs. % healthy sleep?
 
-Let's take a look at the scatter plot that shows the relationship between time spent in bed awake and % healthy sleep first.
+#### Avg. Time in Bed Awake vs. % Healthy Sleep
+Let's take a look at the scatter plot (each point is data for each user) that shows the relationship between time spent in bed awake and % healthy sleep first.
 
 ![Time Awake Healthy Sleep Pre-Cleaning](img/Avg%20Time%20Awake%20in%20Bed%20and%20Healthy%20Sleep%20Percentage%20(Pre-Cleaning).jpg)
 ```R
@@ -277,7 +279,7 @@ ggplot(data=sleep,aes(x=percent_healthy_sleep,y=avg_time_in_bed_awake)) +
   labs(x="% Healthy Sleep",y="Minutes")
 ```
 
-It seems that there might possibly be a trend between time spent awake in bed and % healthy sleep. I removed the outliers and created a trendline for this dataset to see if there is indeed a trend or a relationship.
+It seems that there might possibly be a trend between time spent awake in bed and % healthy sleep. I removed the outliers and created a trendline for this dataset to see if there is indeed a trend or a relationship. In this case, the outliers are the two points that skew the vertical portion of the data.
 
 ![Time Awake Healthy Sleep](img/Avg%20Time%20Awake%20in%20Bed%20and%20Healthy%20Sleep%20Percentage.jpg)
 
@@ -311,3 +313,61 @@ ggplot(data=awake_phs_clean,aes(x=percent_healthy_sleep,y=avg_time_in_bed_awake)
 # Save the scatter plot
 ggsave("img/Avg Time Awake in Bed and Healthy Sleep Percentage.jpg")
 ```
+After cleaning the data and applying a trendline, it is clear that the low r-squared value is low, indicating that even if there is a trendline, there is unlikely to be a relationship between time awake in bed and % healthy sleep.
+
+#### Avg. Time Asleep vs. % Healthy Sleep
+Now, let's look at the scatter plot of each users' average time asleep vs % healthy sleep. Again, each point represents a single user.
+
+![Time Asleep Healthy Sleep Pre-Cleaning](img/Avg%20Time%20Asleep%20and%20Healthy%20Sleep%20Percentage%20(Pre-Cleaning).jpg)
+
+```R
+# Average time asleep vs % healthy sleep 
+ggplot(data=sleep,aes(x=avg_asleep_minutes,y=percent_healthy_sleep)) + 
+  geom_point(size=3) +
+  scale_y_continuous(expand=c(0,0), limits=c(0,100)) +
+  ggtitle("Average Time Asleep vs. % Healthy Sleep (Pre-Cleaning)") +
+  theme(plot.title = element_text(hjust=0.5)) + 
+  labs(x="% Healthy Sleep",y="Minutes")
+```
+
+There is one outlier where one user recorded more than 600 minutes of sleep on average, but has 0% healthy sleep. Though it is possible due to medical reasons, I excluded it from this analysis to see the overall trend. Adding a trendline after cleaning the data yielded the following result:
+
+![Time Asleep Healthy Sleep](img/Avg%20Time%20Asleep%20and%20Healthy%20Sleep%20Percentage.jpg)
+
+```R
+ggplot(data=awake_phs_clean,aes(x=avg_asleep_minutes,y=percent_healthy_sleep)) + 
+  geom_point(size=3) +
+  coord_cartesian(ylim=c(0,100)) +
+  #scale_y_continuous(expand=c(0,0),limits=c(0,100)) + # Rows are omitted, use coord_cartesian instead
+  ggtitle("Average Time Asleep vs. % Healthy Sleep") +
+  theme(plot.title = element_text(hjust=0.5)) + 
+  labs(x="Minutes",y="% Healthy Sleep") +
+  geom_smooth(method=lm, formula=y~x) + 
+  geom_text(x=300, 
+            y=90, 
+            label=lm_eqn(awake_phs_clean$avg_asleep_minutes,
+                         awake_phs_clean$percent_healthy_sleep), parse=TRUE)
+```
+
+A positive correlation between average time asleep and % healthy sleep is shown. Although the r-squared value is 0.641 and is not as strong, the correlation is still significant and therefore, we can say that users that were asleep longer tend to have higher quality of sleep. Though it is an obvious statement, it's nice to see the numerical evidence.
+
+#### Any Other Factors Affecting Sleep?
+Whenever I have issues with falling asleep, I would do a light exercise throughout the day and a lot of the times, that is the right solution for me. I was wondering if that was the case for the users in this dataset, and so I decided to look at correlations (if any) between sedentary times and average time asleep for each user. There were no glaring outliers that needed extra cleaning, so I added a trendline right away.
+
+![Sedentary and Asleep](img/Avg%20Time%20Asleep%20and%20Avg%20Time%20Sedentary.jpg)
+```R
+sedentary_asleep <- read.csv("data/created/sedentary_vs_asleep.csv")
+ggplot(data=sedentary_asleep,aes(x=asleep_minutes,y=sedentary_minutes)) +
+  geom_point(size=3) + 
+  scale_y_continuous(expand=c(0,0),limit=c(500,1400)) +
+  ggtitle("Avg. Asleep Minutes vs. Avg. Sedentary Minutes (Per User)") +
+  theme(plot.title = element_text(hjust=0.5)) +
+  labs(x="Minutes (Asleep)",y="Minutes (Sedentary)") +
+  geom_smooth(method=lm, formula=y~x) + 
+  geom_text(x=150,
+            y=625,
+            label=lm_eqn(sedentary_asleep$asleep_minutes,
+                         sedentary_asleep$sedentary_minutes), parse=TRUE)
+
+```
+The trendline has a negative slope which suggests that the less time the users spend sedentary, the more quality sleep they will get. However, the r-squared value is very low and the relationship is somewhat debateable. Taking a glance at the overall scatter plot without the trendline also shows that there is little to no correlation between the two variables.
