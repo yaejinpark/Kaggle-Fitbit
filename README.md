@@ -1,8 +1,6 @@
 # Kaggle Fitbit Data - Calories and Sleep Analysis for Bellabeat
-Author: Yae Jin Park (Jin Park)
-Last Revised: October 11th, 2022
-
-(Upcoming: Tableau Dashboard of the following analysis)
+Author: Jin Park
+Last Revised: November 14th, 2022
 
 ## Introduction
 Health has been and still is one of civilization's biggest interest and concern as healthy people are the building blocks of a strong society. As such, many companies are formed to utilize modern technology to assist people with bettering themselves physically, and one of them is Fitbit. With [health data collected from 30+ users and published in Kaggle](https://www.kaggle.com/arashnic/fitbit), data analysts are provided a great opportunity to see how certain aspects of said health data (sleep, calories burnt, and much more) are related to each other or how the users' health habits are affecting them. 
@@ -75,13 +73,13 @@ Technologies utilized for data cleaning and analysis:
 Calorie intake assumptions were made based on [Estimated Calorie Requirements](https://www.webmd.com/diet/features/estimated-calorie-requirement)
 
 
-### Cleaning - Big Query
+### Cleaning - BigQuery: Calorie Data
 *Please note that if you are to attempt in recreating my work, my queries' syntax may not work 100% for DBMS and may require minor adjustments. The queries are strictly for the BigQuery setup I have, as shown in the user_activities table in the image below.*
 
 ![BigQuery Settings](/img/bigquery-setup.png)
 
 **active_levels**
-Found the user's active status by finding the average of distance they travelled and grouped by userID
+The user's active status were found by finding the average of distance they traveled/were active for and grouped by userID
 
 ```SQL
 SELECT Id,
@@ -94,8 +92,8 @@ SELECT Id,
 FROM user_activities.daily_intensities
 GROUP BY Id;
 ```
-
-
+**user_weightdiff_prediction**
+Based on the users' active levels, I assumed their calorie intakes will be one of the three depending on their activeness: 1800, 2000, or 2200. Sedentary users will consume the least (1800), and active users will consume the most (2200). I merged the *active_levels* table with *calorieIntake_activeLevel*.
 
 ```SQL
 SELECT al.*, ci.CalorieIntake
@@ -103,10 +101,96 @@ FROM user_activities.active_levels as al
 JOIN user_activities.calorie_intake as ci on al.ActiveLevel = ci.ActiveLevel
 ORDER BY al.Id;
 ```
- 
-* Find if user is in calories deficit, merging with dailyCalories table and calculating the calorie deficit.
-* Find users in calories deficit but did not lose weight or gained weight
-* Set a range of percentage where the user (during the observed time period) falls for healthy sleep in all sleep records. If healthy sleep is over 75% (some arbitrary assumption), have company recommend user to decrease screen time in the evening, workout more, etc.
+The resulting table (not the final user_weightdiff_prediction, but in process of getting said table) had the following schema:
+
+| Id      | avg_distance |ActiveLevel|CalorieIntake|
+| ----------- | ----------- | ----------- | ---------- |
+| INTEGER      | FLOAT       | STRING | INTEGER
+| 1503960366   | 4.8501013330322582 |Active | 2200|
+| ... | ... | ... | ... |
+
+With the *dailyCalories_merged* (part of given dataset), I merged it with the intermediate table after summing the total calories burnt and total calories consumed (assumption). The BigQuery code and the schema of the resulting *user_weightdiff_prediction* are the following:
+
+```SQL
+SELECT 
+  dc.Id, SUM(dc.Calories) as total_calories_burnt, 
+  SUM(uc.CalorieIntake) as total_calories_consumed,
+  SUM(dc.Calories - uc.CalorieIntake) as calorie_deficit,
+  SUM(dc.Calories - uc.CalorieIntake)/7700 as weightloss_pred_kg,
+  SUM(dc.Calories - uc.CalorieIntake)/3500 as weightloss_pred_lb
+FROM user_activities.daily_calories as dc
+JOIN user_activities.user_calories as uc on dc.Id = uc.Id
+GROUP BY dc.Id
+ORDER BY dc.Id ASC;
+```
+| Id      | total_calories_burnt |total_calories_consumed|calorie_deficit|weightloss_pred_kg|weightloss_pred_lb|
+| ----------- | ----------- | ----------- | ---------- | ----------- | ---------- |
+| INTEGER      | INTEGER       | INTEGER | INTEGER|FLOAT|FLOAT
+| 1624580081   | 45984 |62000 | -16016|-2.08|-4.576|
+| ... | ... | ... | ... |...|...|...|
+
+The calorie deficit is negative if it is predicted that the user's total calorie intake is bigger than total calories burnt.
+
+**actual_weight_diff**
+In order to see if the predictions are correct, I used the given data in *weightLogInfo_merged* to find each user's first and last weigh-in and the weight difference between those two dates. This task was done by running the following BigQuery code:
+
+```SQL
+SELECT 
+  Id,
+  MIN(Date) as first_weigh_in,
+  MAX(Date) as last_weigh_in,
+  MAX(WeightKg) - MIN(WeightKg) as weight_diff_kg,
+  MAX(WeightPounds) - MIN(WeightPounds) as weight_diff_lb
+FROM user_activities.weight_info
+GROUP BY Id;
+```
+**weightdiff_pred_actual_merged**
+After finding the actual weight differences users recorded in their system, I merged the *user_weightdiff_prediction* to *actual_weight_diff* using the following code:
+
+```SQL
+SELECT wp.Id,aw.first_weigh_in,aw.last_weigh_in,wp.weightloss_pred_lb,aw.weight_diff_lb
+FROM user_activities.actual_weightloss as aw
+JOIN user_activities.weightloss_prediction as wp on aw.Id = wp.Id;
+```
+The resulting table had the following schema and resembled given sample data:
+
+| Id | first_weigh_in |last_weigh_in|weightloss_pred_lb|weight_diff_lb|
+| ----------- | ----------- | ----------- | ---------- | ----------- | ---------- |
+| INTEGER | TIMESTAMP | TIMESETAMP | FLOAT|FLOAT|
+| 8877689391|2016-04-12 06:47:11 UTC|2016-05-12 06:42:53 UTC | 10.808|3.9683275000000151|
+| ... | ... | ... | ... |...|
+
+### Cleaning - BigQuery: Sleep Data
+Since I also utilized BigQuery to clean users' sleep data, here's a quick switch of gears and cleaning up said sleep dataset with BigQuery.
+
+**sedentary_vs_asleep**
+I wanted to see if there's any data that will reveal any relationship (if any) between time spent sedentary and sleeping quality (sleep time). Data extraction for this task is done by merging each users' average of sedentary time and average of time asleep in *daily_intensities* and *sleepDay_merged*.
+
+```SQL
+SELECT di.Id,AVG(di.SedentaryMinutes) as sedentary_minutes, AVG(ds.TotalMinutesAsleep) as asleep_minutes
+FROM user_activities.daily_intensities as di
+JOIN user_activities.daily_sleep as ds on ds.Id = di.Id
+GROUP BY di.Id
+ORDER BY di.Id ASC
+```
+
+**users_sleep_healthy**
+I've set a range of percentage where the user (during the observed time period) falls for healthy sleep in all sleep records. If healthy sleep is over 75% (arbitrary assumption), the user is assumed to have a healthy sleeping habit.
+
+```SQL
+SELECT 
+  Id,
+  AVG(TotalMinutesAsleep) as avg_asleep_minutes,
+  AVG(TotalTimeInBed) as avg_time_in_bed,
+  AVG(TotalTimeInBed)-AVG(TotalMinutesAsleep) as avg_time_in_bed_awake,
+  COUNTIF(HealthySleep=TRUE)/COUNT(*)*100 as percent_healthy_sleep
+FROM user_activities.daily_sleep 
+GROUP BY Id
+```
+
+Now that all of the data I require are cleaned and prepared, it's time to visualize them and look for any trends among them.
+
+## Visualization
 
 Remaining TODO
 * go deeper in analysis with above to divide sleep category (restless and fully asleep) for sleep help product recommendation with Tableau
