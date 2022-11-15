@@ -77,7 +77,7 @@ Calorie intake assumptions were made based on [Estimated Calorie Requirements](h
 
 ![BigQuery Settings](/img/bigquery-setup.png)
 
-**active_levels**
+**active_levels**\
 The user's active status were found by finding the average of distance they traveled/were active for and grouped by userID
 
 ```SQL
@@ -91,7 +91,7 @@ SELECT Id,
 FROM user_activities.daily_intensities
 GROUP BY Id;
 ```
-**user_weightdiff_prediction**
+**user_weightdiff_prediction**\
 Based on the users' active levels, I assumed their calorie intakes will be one of the three depending on their activeness: 1800, 2000, or 2200. Sedentary users will consume the least (1800), and active users will consume the most (2200). I merged the *active_levels* table with *calorieIntake_activeLevel*.
 
 ```SQL
@@ -130,7 +130,7 @@ ORDER BY dc.Id ASC;
 
 The calorie deficit is negative if it is predicted that the user's total calorie intake is bigger than total calories burnt.
 
-**actual_weight_diff**
+**actual_weight_diff**\
 In order to see if the predictions are correct, I used the given data in *weightLogInfo_merged* to find each user's first and last weigh-in and the weight difference between those two dates. This task was done by running the following BigQuery code:
 
 ```SQL
@@ -143,7 +143,7 @@ SELECT
 FROM user_activities.weight_info
 GROUP BY Id;
 ```
-**weightdiff_pred_actual_merged**
+**weightdiff_pred_actual_merged**\
 After finding the actual weight differences users recorded in their system, I merged the *user_weightdiff_prediction* to *actual_weight_diff* using the following code:
 
 ```SQL
@@ -162,7 +162,7 @@ The resulting table had the following schema and resembled given sample data:
 ### Cleaning - BigQuery: Sleep Data
 Since I also utilized BigQuery to clean users' sleep data, here's a quick switch of gears and cleaning up said sleep dataset with BigQuery.
 
-**sedentary_vs_asleep**
+**sedentary_vs_asleep**\
 I wanted to see if there's any data that will reveal any relationship (if any) between time spent sedentary and sleeping quality (sleep time). Data extraction for this task is done by merging each users' average of sedentary time and average of time asleep in *daily_intensities* and *sleepDay_merged*.
 
 ```SQL
@@ -173,7 +173,7 @@ GROUP BY di.Id
 ORDER BY di.Id ASC
 ```
 
-**users_sleep_healthy**
+**users_sleep_healthy**\
 I've set a range of percentage where the user (during the observed time period) falls for healthy sleep in all sleep records. If healthy sleep is over 75% (arbitrary assumption), the user is assumed to have a healthy sleeping habit.
 
 ```SQL
